@@ -1,0 +1,35 @@
+name: "Upload Release (1GP)"
+description: "Upload a 1GP managed release package version"
+inputs:
+  cumulusci-version:
+    description: 'version of CumulusCI to install'
+    required: false
+  sfdx-version:
+    description: 'version of SFDX to install'
+    required: false
+  packaging-org-auth-url:
+    description: 'SFDX auth URL for the packaging org'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - uses: nimba-actions/setup-cumulus@v1
+      with:
+        cumulusci-version: '${{ inputs.cumulusci-version }}'
+        sfdx-version: '${{ inputs.sfdx-version }}'
+    - uses: nimba-actions/authorize-org@v1
+      with:
+        auth-url: '${{ inputs.packaging-org-auth-url }}'
+        org-name: packaging
+        dev-hub: false
+    - name: "Run Cumulus Flow: ci_master"
+      uses: nimba-actions/run-flow@v1
+      with:
+        org-name: packaging
+        flow-name: ci_master
+    - name: "Run Cumulus Flow: release_production"
+      uses: nimba-actions/run-flow@v1
+      with:
+        org-name: packaging
+        flow-name: release_production
